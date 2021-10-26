@@ -5,8 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 project(HauntedHouse)
 
 include_directories(haunted-house
-PRIVATE
+PUBLIC
     includes
+    .
 )
 
 link_directories(haunted-house
