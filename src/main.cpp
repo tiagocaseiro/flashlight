@@ -1,8 +1,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 
-#include <filesystem>
 #include <iostream>
-#include <memory>
 
 #include <glad/glad.h>
 
@@ -84,17 +82,6 @@ int main() {
 
     auto projection = glm::perspective(
         glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-
-    auto house_model = glm::mat4(1.0f);
-    house_model      = glm::translate(house_model, {0.0f, -1.f, -10.0f});
-    house_model      = glm::scale(house_model, {0.3f, 0.3f, 0.3f});
-
-    auto flashlight_model = glm::mat4(1.0f);
-    flashlight_model      = glm::translate(flashlight_model, {-0.25f, 0.0f, 2.5f});
-    flashlight_model      = glm::rotate(flashlight_model, glm::radians(-90.f), {1.0f, 0.0f, 0.0f});
-    flashlight_model      = glm::scale(flashlight_model, {0.1f, 0.1f, 0.1f});
-
-    auto flashlight_view = camera.GetViewMatrix();
 
     // build and compile shaders
     // -------------------------
