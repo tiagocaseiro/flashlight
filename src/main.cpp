@@ -24,11 +24,12 @@ void processInput(GLFWwindow* window);
 unsigned int loadCubemap(std::vector<std::string> faces);
 
 // settings
-const unsigned int SCR_WIDTH  = 800;
-const unsigned int SCR_HEIGHT = 600;
-
+static constexpr auto SCR_WIDTH  = 800;
+static constexpr auto SCR_HEIGHT = 600;
 // camera
-Camera camera(glm::vec3(0.0f, 0.35f, 3.0f));
+static auto camera = Camera(glm::vec3(0.0f, 0.35f, 3.0f));
+static const auto projection =
+    glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 float lastX     = SCR_WIDTH / 2.0f;
 float lastY     = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -80,25 +81,20 @@ int main() {
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
 
-    auto projection = glm::perspective(
-        glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-
     // build and compile shaders
     // -------------------------
-    Shader skybox_shader("shaders/skybox.vs", "shaders/skybox.fs");
+    auto skybox_shader = Shader("shaders/skybox.vs", "shaders/skybox.fs");
     skybox_shader.use();
     skybox_shader.set("projection", projection);
     skybox_shader.set("texture1", 0);
 
-    Skybox skybox;
-
-    auto skybox_cubemap = loadCubemap(
+    auto skybox = Skybox{
         {"cubemaps/right.jpg",
          "cubemaps/left.jpg",
          "cubemaps/top.jpg",
          "cubemaps/bottom.jpg",
          "cubemaps/front.jpg",
-         "cubemaps/back.jpg"});
+         "cubemaps/back.jpg"}};
 
     // draw in wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -123,15 +119,8 @@ int main() {
 
         auto camera_view = camera.GetViewMatrix();
 
-        skybox_shader.use();
+        skybox.draw(skybox_shader, camera_view);
 
-        glDepthFunc(GL_LEQUAL);
-        skybox_shader.set(
-            "view", glm::mat4(glm::mat3(camera_view))); // remove translation from the view
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, skybox_cubemap);
-        skybox.draw(skybox_shader);
-        glDepthFunc(GL_LESS);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -193,7 +182,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     camera.ProcessMouseScroll(yoffset);
 }
-
 
 unsigned int loadCubemap(std::vector<std::string> faces) {
     unsigned int textureID;
