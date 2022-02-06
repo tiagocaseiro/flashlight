@@ -7,4 +7,6 @@ add_executable(game
 target_link_libraries(game
 PUBLIC
     glfw3
+    assimpd
+    zlibstaticd
 )
