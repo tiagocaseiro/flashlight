@@ -6,13 +6,11 @@
 
 #include <GLFW/glfw3.h>
 
-#include <stb_image.h>
-
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "learnopengl/camera.hpp"
+#include "learnopengl/model.hpp"
 #include "learnopengl/shader.hpp"
 
 #include "skybox.hpp"
@@ -96,7 +94,30 @@ int main() {
          "cubemaps/front.jpg",
          "cubemaps/back.jpg"}};
 
-    // draw in wireframe
+    auto house_model = glm::mat4(1.0f);
+    house_model      = glm::translate(house_model, {0.0f, -1.f, -10.0f});
+    house_model      = glm::scale(house_model, {0.3f, 0.3f, 0.3f});
+    auto house       = Model("models/cottage/cottage_obj.obj");
+
+    auto object_shader = Shader("shaders/object.vs", "shaders/object.fs");
+    object_shader.use();
+    object_shader.set("projection", projection);
+    object_shader.set("directional_light.direction", -0.2f, -1.0f, -0.3f);
+    object_shader.set("viewPos", camera.Position);
+
+    // light properties
+    object_shader.set("directional_light.ambient", 0.1f, 0.1f, 0.1f);
+
+    object_shader.set("spotlight.ambient", 0.0f, 0.0f, 0.0f);
+    object_shader.set("spotlight.diffuse", 1.0f, 1.0f, 1.0f);
+    object_shader.set("spotlight.specular", 1.0f, 1.0f, 1.0f);
+    object_shader.set("spotlight.cutOff", glm::cos(glm::radians(12.5f)));
+    object_shader.set("spotlight.outerCutOff", glm::cos(glm::radians(15.0f)));
+    // object_shader.set("spotLight.constant", 1.0f);
+    // object_shader.set("spotLight.linear", 0.09f);
+    // object_shader.set("spotLight.quadratic", 0.032f);
+
+    // draw in wireframec
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // render loop
@@ -117,10 +138,14 @@ int main() {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto camera_view = camera.GetViewMatrix();
+        skybox.draw(skybox_shader, camera.GetViewMatrix());
 
-        skybox.draw(skybox_shader, camera_view);
-
+        object_shader.use();
+        object_shader.set("spotlight.position", camera.Position);
+        object_shader.set("spotlight.direction", camera.Front);
+        object_shader.set("view", camera.GetViewMatrix());
+        object_shader.set("model", house_model);
+        house.Draw(object_shader);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
